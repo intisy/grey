@@ -93,7 +93,7 @@ namespace grey::backends {
             if(window == nullptr)
                 return;
             glfwMakeContextCurrent(window);
-            glfwSwapInterval(6); // Enable vsync
+            glfwSwapInterval(1); // Enable vsync
 
             // Setup Dear ImGui context
             IMGUI_CHECKVERSION();
@@ -231,7 +231,20 @@ namespace grey::backends {
         void move_main_viewport(int x, int y) {}
 
         void* make_native_texture(grey::common::raw_img& img) {
-            return nullptr;
+            if(!img || img.x == 0 || img.y == 0) return nullptr;
+
+            GLuint texture_id;
+            glGenTextures(1, &texture_id);
+            glBindTexture(GL_TEXTURE_2D, texture_id);
+
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, img.x, img.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, img.get_data());
+
+            return (void*)(intptr_t)texture_id;
         }
 
         void set_dark_mode(bool enabled) {
